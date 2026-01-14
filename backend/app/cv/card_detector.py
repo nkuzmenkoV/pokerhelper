@@ -5,16 +5,19 @@ from pathlib import Path
 from app.poker.game_state import Card
 from app.config import get_settings
 
+# Card constants (module level for list comprehension access)
+RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
+SUITS = ['c', 'd', 'h', 's']  # clubs, diamonds, hearts, spades
+CLASS_NAMES = [f"{r}{s}" for s in SUITS for r in RANKS]
+
 
 class CardDetector:
     """Detects and classifies playing cards using YOLOv8."""
     
-    # Card rank mapping
-    RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
-    SUITS = ['c', 'd', 'h', 's']  # clubs, diamonds, hearts, spades
-    
-    # Class names for YOLO model (52 cards)
-    CLASS_NAMES = [f"{r}{s}" for s in SUITS for r in RANKS]
+    # Reference module-level constants
+    RANKS = RANKS
+    SUITS = SUITS
+    CLASS_NAMES = CLASS_NAMES
     
     def __init__(self):
         self.model = None
