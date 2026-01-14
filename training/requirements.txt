@@ -1,0 +1,10 @@
+# Training dependencies
+ultralytics>=8.1.0
+opencv-python>=4.9.0
+Pillow>=10.2.0
+numpy>=1.26.0
+pyautogui>=0.9.54
+PyGetWindow>=0.0.9; sys_platform == "win32"
+
+# Optional: For faster labeling
+# labelImg  # Install separately: pip install labelImg

@@ -1,0 +1,62 @@
+# Environment
+.env
+.env.*
+!env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+.venv/
+
+# Node
+node_modules/
+dist/
+.npm
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# ML Models (large files)
+*.pt
+*.pth
+*.onnx
+backend/models/*.pt
+
+# Training data (large files)
+backend/data/training_dataset/images/*
+!backend/data/training_dataset/images/.gitkeep
+backend/data/export/
+training/card_dataset/images/
+training/card_dataset/labels/
+
+# SSL certificates
+nginx/ssl/
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+
+# Backups
+backups/
+
+# Build artifacts
+build/
+*.egg-info/
+
+# Coverage
+.coverage
+htmlcov/

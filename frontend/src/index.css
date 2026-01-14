@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --poker-green: #22c55e;
+  --poker-felt: #1a472a;
+  --poker-dark: #0f1419;
+}
+
+body {
+  font-family: 'Outfit', system-ui, sans-serif;
+  background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0f1419 100%);
+  min-height: 100vh;
+  color: #e5e7eb;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(34, 197, 94, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 197, 94, 0.7);
+}
+
+/* Card styles */
+.card-heart, .card-diamond {
+  color: #dc2626;
+}
+
+.card-spade, .card-club {
+  color: #1f2937;
+}
+
+/* Poker table gradient */
+.poker-table-bg {
+  background: radial-gradient(ellipse at center, #2d5a3d 0%, #1a472a 50%, #0f2817 100%);
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Action button styles */
+.action-fold {
+  @apply bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600;
+}
+
+.action-check {
+  @apply bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600;
+}
+
+.action-call {
+  @apply bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600;
+}
+
+.action-raise {
+  @apply bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600;
+}
+
+.action-allin {
+  @apply bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500;
+}
+
+/* Hand range matrix cell */
+.range-cell {
+  @apply w-6 h-6 text-xs flex items-center justify-center rounded transition-all duration-200;
+}
+
+.range-cell.raise {
+  @apply bg-green-500/80 text-white;
+}
+
+.range-cell.call {
+  @apply bg-blue-500/80 text-white;
+}
+
+.range-cell.fold {
+  @apply bg-gray-700/50 text-gray-500;
+}
+
+.range-cell.mixed {
+  background: linear-gradient(135deg, #22c55e 50%, #3b82f6 50%);
+  @apply text-white;
+}
+
+/* Keyboard shortcut style */
+.kbd {
+  @apply inline-block px-1.5 py-0.5 text-xs font-mono bg-gray-700 border border-gray-600 rounded shadow-sm;
+}
+
+/* Animation for pulse indicator */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
