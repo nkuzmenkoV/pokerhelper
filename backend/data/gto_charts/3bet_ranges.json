@@ -1,0 +1,84 @@
+{
+  "meta": {
+    "type": "3bet_ranges",
+    "description": "3-bet and calling ranges vs open raises",
+    "source": "GTO approximation for 20-40bb effective stacks"
+  },
+  "ranges": {
+    "vs_UTG": {
+      "3bet_value": ["AA", "KK", "QQ", "AKs", "AKo"],
+      "3bet_bluff": ["A5s", "A4s"],
+      "call": ["JJ", "TT", "99", "88", "77", "AQs", "AQo", "AJs", "ATs", "KQs", "KJs", "QJs", "JTs"],
+      "description": "Tight 3-bet range vs early position"
+    },
+    "vs_UTG1": {
+      "3bet_value": ["AA", "KK", "QQ", "AKs", "AKo"],
+      "3bet_bluff": ["A5s", "A4s", "A3s"],
+      "call": ["JJ", "TT", "99", "88", "77", "66", "AQs", "AQo", "AJs", "ATs", "A9s", "KQs", "KJs", "KTs", "QJs", "QTs", "JTs", "T9s"],
+      "description": "Slightly wider vs UTG+1"
+    },
+    "vs_UTG2": {
+      "3bet_value": ["AA", "KK", "QQ", "JJ", "AKs", "AKo"],
+      "3bet_bluff": ["A5s", "A4s", "A3s", "A2s"],
+      "call": ["TT", "99", "88", "77", "66", "55", "AQs", "AQo", "AJs", "AJo", "ATs", "A9s", "KQs", "KQo", "KJs", "KTs", "QJs", "QTs", "JTs", "T9s", "98s"],
+      "description": "Widen vs middle position"
+    },
+    "vs_LJ": {
+      "3bet_value": ["AA", "KK", "QQ", "JJ", "AKs", "AKo", "AQs"],
+      "3bet_bluff": ["A5s", "A4s", "A3s", "A2s", "K5s", "K4s"],
+      "call": ["TT", "99", "88", "77", "66", "55", "44", "AQo", "AJs", "AJo", "ATs", "A9s", "A8s", "KQs", "KQo", "KJs", "KTs", "K9s", "QJs", "QTs", "Q9s", "JTs", "J9s", "T9s", "98s", "87s"],
+      "description": "vs Lojack"
+    },
+    "vs_HJ": {
+      "3bet_value": ["AA", "KK", "QQ", "JJ", "TT", "AKs", "AKo", "AQs", "AQo"],
+      "3bet_bluff": ["A5s", "A4s", "A3s", "A2s", "K5s", "K4s", "K3s", "76s", "65s"],
+      "call": ["99", "88", "77", "66", "55", "44", "33", "AJs", "AJo", "ATs", "ATo", "A9s", "A8s", "A7s", "KQs", "KQo", "KJs", "KJo", "KTs", "K9s", "K8s", "QJs", "QJo", "QTs", "Q9s", "JTs", "J9s", "J8s", "T9s", "T8s", "98s", "97s", "87s", "76s"],
+      "description": "vs Hijack"
+    },
+    "vs_CO": {
+      "3bet_value": ["AA", "KK", "QQ", "JJ", "TT", "99", "AKs", "AKo", "AQs", "AQo", "AJs"],
+      "3bet_bluff": ["A5s", "A4s", "A3s", "A2s", "A9o", "K5s", "K4s", "K3s", "K2s", "Q5s", "76s", "65s", "54s"],
+      "call": ["88", "77", "66", "55", "44", "33", "22", "AJo", "ATs", "ATo", "A9s", "A8s", "A7s", "A6s", "KQs", "KQo", "KJs", "KJo", "KTs", "KTo", "K9s", "K8s", "K7s", "QJs", "QJo", "QTs", "QTo", "Q9s", "Q8s", "JTs", "JTo", "J9s", "J8s", "T9s", "T8s", "98s", "97s", "87s", "86s", "76s", "65s"],
+      "description": "vs Cutoff - wider defense"
+    },
+    "vs_BTN": {
+      "3bet_value": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "AKs", "AKo", "AQs", "AQo", "AJs", "AJo", "ATs"],
+      "3bet_bluff": ["A5s", "A4s", "A3s", "A2s", "A9o", "A8o", "K5s", "K4s", "K3s", "K2s", "Q5s", "Q4s", "J6s", "76s", "65s", "54s", "43s"],
+      "call": ["77", "66", "55", "44", "33", "22", "ATo", "A9s", "A9o", "A8s", "A7s", "A6s", "A5o", "A4o", "KQs", "KQo", "KJs", "KJo", "KTs", "KTo", "K9s", "K9o", "K8s", "K7s", "K6s", "QJs", "QJo", "QTs", "QTo", "Q9s", "Q9o", "Q8s", "Q7s", "JTs", "JTo", "J9s", "J9o", "J8s", "J7s", "T9s", "T9o", "T8s", "T7s", "98s", "98o", "97s", "96s", "87s", "86s", "85s", "76s", "75s", "65s", "64s", "54s", "53s"],
+      "description": "vs Button from blinds - wide defense"
+    },
+    "vs_SB": {
+      "3bet_value": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "AKs", "AKo", "AQs", "AQo", "AJs", "AJo", "ATs", "ATo", "A9s", "KQs", "KQo"],
+      "3bet_bluff": ["A5s", "A4s", "A3s", "A2s", "A9o", "A8o", "A7o", "A6o", "K5s", "K4s", "K3s", "K2s", "K9o", "K8o", "Q5s", "Q4s", "Q3s", "J6s", "J5s", "T6s", "96s", "86s", "76s", "65s", "54s", "43s", "32s"],
+      "call": ["66", "55", "44", "33", "22", "A9o", "A8s", "A8o", "A7s", "A6s", "A5o", "A4o", "A3o", "A2o", "KJs", "KJo", "KTs", "KTo", "K9s", "K9o", "K8s", "K8o", "K7s", "K7o", "K6s", "K6o", "K5o", "K4o", "K3o", "K2o", "QJs", "QJo", "QTs", "QTo", "Q9s", "Q9o", "Q8s", "Q8o", "Q7s", "Q7o", "Q6s", "Q6o", "Q5o", "Q4o", "Q3o", "Q2o", "JTs", "JTo", "J9s", "J9o", "J8s", "J8o", "J7s", "J7o", "J6o", "J5o", "J4o", "T9s", "T9o", "T8s", "T8o", "T7s", "T7o", "T6o", "T5o", "98s", "98o", "97s", "97o", "96o", "95o", "87s", "87o", "86o", "85o", "76o", "75o", "65o", "64o", "54o", "53o", "43o"],
+      "description": "BB vs SB - very wide defense, positional advantage"
+    }
+  },
+  "squeeze_ranges": {
+    "vs_open_and_call": {
+      "squeeze_value": ["AA", "KK", "QQ", "JJ", "AKs", "AKo"],
+      "squeeze_bluff": ["A5s", "A4s", "A3s", "K5s"],
+      "description": "When facing open and cold call"
+    }
+  },
+  "4bet_ranges": {
+    "vs_3bet_IP": {
+      "4bet_value": ["AA", "KK", "QQ", "AKs"],
+      "4bet_bluff": ["A5s", "A4s"],
+      "call": ["JJ", "TT", "99", "AKo", "AQs", "AQo", "AJs"],
+      "description": "Facing 3-bet when in position"
+    },
+    "vs_3bet_OOP": {
+      "4bet_value": ["AA", "KK", "QQ", "AKs", "AKo"],
+      "4bet_bluff": ["A5s", "A4s", "A3s"],
+      "call": ["JJ", "TT", "AQs", "AQo"],
+      "description": "Facing 3-bet when out of position"
+    }
+  },
+  "sizing": {
+    "3bet_IP": {3.0: "In position 3-bet size (x open)"},
+    "3bet_OOP": 3.5,
+    "4bet": 2.25,
+    "5bet": "All-in"
+  }
+}

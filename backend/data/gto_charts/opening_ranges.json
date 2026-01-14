@@ -1,0 +1,84 @@
+{
+  "meta": {
+    "type": "opening_ranges",
+    "description": "Standard open raise ranges for MTT play",
+    "source": "GTO approximation for 20-40bb effective stacks"
+  },
+  "ranges": {
+    "9max": {
+      "UTG": {
+        "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "AKs", "AKo", "AQs", "AQo", "AJs", "ATs", "A5s", "A4s", "KQs", "KJs", "KTs", "QJs", "QTs", "JTs"],
+        "raise_size": 2.2,
+        "description": "Tight range from earliest position"
+      },
+      "UTG1": {
+        "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "AKs", "AKo", "AQs", "AQo", "AJs", "ATs", "A9s", "A5s", "A4s", "A3s", "KQs", "KJs", "KTs", "K9s", "QJs", "QTs", "JTs", "T9s"],
+        "raise_size": 2.2,
+        "description": "Slightly wider than UTG"
+      },
+      "UTG2": {
+        "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "AKs", "AKo", "AQs", "AQo", "AJs", "AJo", "ATs", "A9s", "A8s", "A5s", "A4s", "A3s", "A2s", "KQs", "KQo", "KJs", "KTs", "K9s", "QJs", "QTs", "Q9s", "JTs", "J9s", "T9s", "98s"],
+        "raise_size": 2.2,
+        "description": "MP range"
+      },
+      "LJ": {
+        "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44", "AKs", "AKo", "AQs", "AQo", "AJs", "AJo", "ATs", "A9s", "A8s", "A7s", "A6s", "A5s", "A4s", "A3s", "A2s", "KQs", "KQo", "KJs", "KTs", "K9s", "K8s", "QJs", "QTs", "Q9s", "JTs", "J9s", "T9s", "98s", "87s"],
+        "raise_size": 2.2,
+        "description": "Lojack - starting to widen"
+      },
+      "HJ": {
+        "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44", "33", "22", "AKs", "AKo", "AQs", "AQo", "AJs", "AJo", "ATs", "ATo", "A9s", "A8s", "A7s", "A6s", "A5s", "A4s", "A3s", "A2s", "KQs", "KQo", "KJs", "KJo", "KTs", "K9s", "K8s", "K7s", "QJs", "QJo", "QTs", "Q9s", "Q8s", "JTs", "J9s", "J8s", "T9s", "T8s", "98s", "97s", "87s", "76s", "65s"],
+        "raise_size": 2.2,
+        "description": "Hijack - wider range"
+      },
+      "CO": {
+        "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44", "33", "22", "AKs", "AKo", "AQs", "AQo", "AJs", "AJo", "ATs", "ATo", "A9s", "A9o", "A8s", "A7s", "A6s", "A5s", "A4s", "A3s", "A2s", "KQs", "KQo", "KJs", "KJo", "KTs", "KTo", "K9s", "K8s", "K7s", "K6s", "K5s", "QJs", "QJo", "QTs", "QTo", "Q9s", "Q8s", "Q7s", "JTs", "JTo", "J9s", "J8s", "J7s", "T9s", "T8s", "T7s", "98s", "97s", "87s", "86s", "76s", "75s", "65s", "64s", "54s"],
+        "raise_size": 2.3,
+        "description": "Cutoff - aggressive position"
+      },
+      "BTN": {
+        "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44", "33", "22", "AKs", "AKo", "AQs", "AQo", "AJs", "AJo", "ATs", "ATo", "A9s", "A9o", "A8s", "A8o", "A7s", "A6s", "A5s", "A4s", "A3s", "A2s", "KQs", "KQo", "KJs", "KJo", "KTs", "KTo", "K9s", "K9o", "K8s", "K7s", "K6s", "K5s", "K4s", "K3s", "K2s", "QJs", "QJo", "QTs", "QTo", "Q9s", "Q9o", "Q8s", "Q7s", "Q6s", "Q5s", "Q4s", "JTs", "JTo", "J9s", "J9o", "J8s", "J7s", "J6s", "T9s", "T9o", "T8s", "T7s", "T6s", "98s", "98o", "97s", "96s", "87s", "86s", "85s", "76s", "75s", "65s", "64s", "54s", "53s", "43s"],
+        "raise_size": 2.3,
+        "description": "Button - widest open range"
+      },
+      "SB": {
+        "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44", "33", "22", "AKs", "AKo", "AQs", "AQo", "AJs", "AJo", "ATs", "ATo", "A9s", "A9o", "A8s", "A7s", "A6s", "A5s", "A4s", "A3s", "A2s", "KQs", "KQo", "KJs", "KJo", "KTs", "KTo", "K9s", "K8s", "K7s", "K6s", "K5s", "K4s", "K3s", "K2s", "QJs", "QJo", "QTs", "QTo", "Q9s", "Q8s", "Q7s", "Q6s", "Q5s", "Q4s", "Q3s", "JTs", "JTo", "J9s", "J8s", "J7s", "J6s", "T9s", "T8s", "T7s", "T6s", "98s", "97s", "96s", "87s", "86s", "76s", "75s", "65s", "64s", "54s", "53s", "43s"],
+        "raise_size": 2.5,
+        "description": "SB vs BB - wide but facing positional disadvantage"
+      }
+    },
+    "6max": {
+      "UTG": {
+        "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "AKs", "AKo", "AQs", "AQo", "AJs", "AJo", "ATs", "A9s", "A5s", "A4s", "A3s", "KQs", "KQo", "KJs", "KTs", "K9s", "QJs", "QTs", "JTs", "T9s", "98s"],
+        "raise_size": 2.2,
+        "description": "UTG in 6-max is like LJ in 9-max"
+      },
+      "HJ": {
+        "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44", "33", "AKs", "AKo", "AQs", "AQo", "AJs", "AJo", "ATs", "ATo", "A9s", "A8s", "A7s", "A6s", "A5s", "A4s", "A3s", "A2s", "KQs", "KQo", "KJs", "KJo", "KTs", "K9s", "K8s", "K7s", "QJs", "QJo", "QTs", "Q9s", "Q8s", "JTs", "J9s", "J8s", "T9s", "T8s", "98s", "97s", "87s", "76s", "65s"],
+        "raise_size": 2.2,
+        "description": "HJ in 6-max"
+      },
+      "CO": {
+        "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44", "33", "22", "AKs", "AKo", "AQs", "AQo", "AJs", "AJo", "ATs", "ATo", "A9s", "A9o", "A8s", "A7s", "A6s", "A5s", "A4s", "A3s", "A2s", "KQs", "KQo", "KJs", "KJo", "KTs", "KTo", "K9s", "K8s", "K7s", "K6s", "K5s", "K4s", "QJs", "QJo", "QTs", "QTo", "Q9s", "Q8s", "Q7s", "Q6s", "JTs", "JTo", "J9s", "J8s", "J7s", "T9s", "T8s", "T7s", "98s", "97s", "96s", "87s", "86s", "76s", "75s", "65s", "64s", "54s", "53s"],
+        "raise_size": 2.3,
+        "description": "CO in 6-max"
+      },
+      "BTN": {
+        "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44", "33", "22", "AKs", "AKo", "AQs", "AQo", "AJs", "AJo", "ATs", "ATo", "A9s", "A9o", "A8s", "A8o", "A7s", "A7o", "A6s", "A5s", "A4s", "A3s", "A2s", "KQs", "KQo", "KJs", "KJo", "KTs", "KTo", "K9s", "K9o", "K8s", "K7s", "K6s", "K5s", "K4s", "K3s", "K2s", "QJs", "QJo", "QTs", "QTo", "Q9s", "Q9o", "Q8s", "Q7s", "Q6s", "Q5s", "Q4s", "Q3s", "Q2s", "JTs", "JTo", "J9s", "J9o", "J8s", "J7s", "J6s", "J5s", "T9s", "T9o", "T8s", "T7s", "T6s", "T5s", "98s", "98o", "97s", "96s", "95s", "87s", "86s", "85s", "76s", "75s", "74s", "65s", "64s", "54s", "53s", "43s"],
+        "raise_size": 2.3,
+        "description": "BTN in 6-max - very wide"
+      },
+      "SB": {
+        "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44", "33", "22", "AKs", "AKo", "AQs", "AQo", "AJs", "AJo", "ATs", "ATo", "A9s", "A9o", "A8s", "A8o", "A7s", "A6s", "A5s", "A4s", "A3s", "A2s", "KQs", "KQo", "KJs", "KJo", "KTs", "KTo", "K9s", "K9o", "K8s", "K7s", "K6s", "K5s", "K4s", "K3s", "K2s", "QJs", "QJo", "QTs", "QTo", "Q9s", "Q9o", "Q8s", "Q7s", "Q6s", "Q5s", "Q4s", "Q3s", "Q2s", "JTs", "JTo", "J9s", "J9o", "J8s", "J7s", "J6s", "J5s", "J4s", "T9s", "T9o", "T8s", "T8o", "T7s", "T6s", "T5s", "98s", "98o", "97s", "97o", "96s", "95s", "87s", "87o", "86s", "85s", "84s", "76s", "76o", "75s", "74s", "65s", "65o", "64s", "63s", "54s", "54o", "53s", "43s", "32s"],
+        "raise_size": 2.5,
+        "description": "SB vs BB in 6-max"
+      }
+    }
+  },
+  "limp_ranges": {
+    "SB": {
+      "description": "Hands that can be limped from SB against aggressive BB",
+      "limp": ["K6o", "K5o", "K4o", "K3o", "K2o", "Q6o", "Q5o", "Q4o", "Q3o", "Q2o", "J6o", "J5o", "J4o", "J3o", "J2o", "T6o", "T5o", "T4o", "T3o", "T2o", "96o", "95o", "94o", "93o", "92o", "86o", "85o", "84o", "83o", "82o", "75o", "74o", "73o", "72o", "64o", "63o", "62o", "53o", "52o", "42o", "32o"]
+    }
+  }
+}

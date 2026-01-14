@@ -1,173 +1,256 @@
 """
 Chart loading and management utilities.
+Loads GTO charts from JSON files and provides lookup functions.
 """
 
+import json
+from pathlib import Path
 from typing import Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-
-from app.db.models import PreflopRange, PushFoldChart
+from functools import lru_cache
 
 
-async def get_preflop_range(
-    session: AsyncSession,
+# Path to chart data
+CHARTS_DIR = Path(__file__).parent.parent.parent / "data" / "gto_charts"
+
+
+@lru_cache(maxsize=4)
+def load_chart(chart_name: str) -> dict:
+    """Load a chart from JSON file with caching."""
+    chart_path = CHARTS_DIR / f"{chart_name}.json"
+    if not chart_path.exists():
+        return {}
+    
+    with open(chart_path, "r") as f:
+        return json.load(f)
+
+
+def get_push_fold_range(
     position: str,
-    action_facing: str,
-    stack_bb: float,
-    table_format: str = "6max",
-) -> list[dict]:
+    stack_bb: int,
+    table_format: str = "9max"
+) -> list[str]:
     """
-    Get preflop range for given spot.
+    Get push range for given position and stack.
     
-    Returns list of hands with their actions and frequencies.
+    Args:
+        position: Player position (UTG, HJ, CO, BTN, SB, etc.)
+        stack_bb: Stack in big blinds (will be rounded to nearest bucket)
+        table_format: "6max" or "9max"
+    
+    Returns:
+        List of hands in the push range
     """
-    query = select(PreflopRange).where(
-        PreflopRange.position == position,
-        PreflopRange.action_facing == action_facing,
-        PreflopRange.table_format == table_format,
-        PreflopRange.stack_bb_min <= stack_bb,
-        PreflopRange.stack_bb_max >= stack_bb,
-    )
+    chart_file = f"push_fold_{table_format}"
+    chart = load_chart(chart_file)
     
-    result = await session.execute(query)
-    ranges = result.scalars().all()
+    if not chart:
+        return []
     
-    return [
-        {
-            "hand": r.hand,
-            "action": r.action,
-            "frequency": r.frequency,
-            "raise_size": r.raise_size,
-        }
-        for r in ranges
-    ]
+    ranges = chart.get("ranges", {})
+    position_ranges = ranges.get(position, {})
+    
+    # Find nearest stack bucket
+    stack_key = _get_stack_key(stack_bb, position_ranges)
+    
+    if not stack_key:
+        return []
+    
+    range_data = position_ranges.get(stack_key, [])
+    
+    # Handle "any" case (push any hand)
+    if range_data == "any":
+        return ["any"]
+    
+    return range_data
 
 
-async def get_hand_action(
-    session: AsyncSession,
-    hand: str,
+def get_call_range(
     position: str,
-    action_facing: str,
-    stack_bb: float,
-    table_format: str = "6max",
-) -> Optional[dict]:
+    stack_bb: int,
+    table_format: str = "9max",
+    vs_position: str = "SB"
+) -> list[str]:
     """
-    Get recommended action for specific hand in given spot.
+    Get calling range vs all-in.
+    
+    Args:
+        position: Hero's position (typically BB)
+        stack_bb: Effective stack
+        table_format: "6max" or "9max"
+        vs_position: Villain's position
+    
+    Returns:
+        List of hands in the call range
     """
-    query = select(PreflopRange).where(
-        PreflopRange.hand == hand,
-        PreflopRange.position == position,
-        PreflopRange.action_facing == action_facing,
-        PreflopRange.table_format == table_format,
-        PreflopRange.stack_bb_min <= stack_bb,
-        PreflopRange.stack_bb_max >= stack_bb,
-    )
+    chart_file = f"push_fold_{table_format}"
+    chart = load_chart(chart_file)
     
-    result = await session.execute(query)
-    range_entry = result.scalar_one_or_none()
+    if not chart:
+        return []
     
-    if range_entry:
-        return {
-            "action": range_entry.action,
-            "frequency": range_entry.frequency,
-            "raise_size": range_entry.raise_size,
-        }
+    call_ranges = chart.get("call_ranges", {})
+    range_key = f"{position}_vs_{vs_position}"
+    position_ranges = call_ranges.get(range_key, {})
     
-    return None
+    stack_key = _get_stack_key(stack_bb, position_ranges)
+    
+    if not stack_key:
+        return []
+    
+    return position_ranges.get(stack_key, [])
 
 
-def generate_default_ranges() -> list[dict]:
+def get_opening_range(
+    position: str,
+    table_format: str = "9max"
+) -> dict:
     """
-    Generate default opening ranges for seeding the database.
+    Get opening range for position.
     
-    Based on standard TAG (Tight-Aggressive) strategy.
+    Returns:
+        Dict with 'raise' list and 'raise_size'
     """
-    ranges = []
+    chart = load_chart("opening_ranges")
     
-    # All possible hands
-    ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
+    if not chart:
+        return {"raise": [], "raise_size": 2.5}
     
-    # Generate all hand combinations
-    hands = []
-    for i, r1 in enumerate(ranks):
-        for j, r2 in enumerate(ranks):
-            if i == j:
-                hands.append(f"{r1}{r2}")  # Pocket pair
-            elif i < j:
-                hands.append(f"{r1}{r2}s")  # Suited
-                hands.append(f"{r1}{r2}o")  # Offsuit
+    ranges = chart.get("ranges", {})
+    format_ranges = ranges.get(table_format, ranges.get("9max", {}))
+    position_data = format_ranges.get(position, {})
     
-    # Define opening ranges by position
-    position_ranges = {
-        "UTG": {
-            "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88",
-                     "AKs", "AQs", "AJs", "ATs", "KQs",
-                     "AKo", "AQo"],
-        },
-        "MP": {
-            "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77",
-                     "AKs", "AQs", "AJs", "ATs", "A9s", "KQs", "KJs", "QJs",
-                     "AKo", "AQo", "AJo"],
-        },
-        "CO": {
-            "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66",
-                     "AKs", "AQs", "AJs", "ATs", "A9s", "A8s", "A7s", "A6s", "A5s",
-                     "KQs", "KJs", "KTs", "QJs", "QTs", "JTs",
-                     "AKo", "AQo", "AJo", "ATo", "KQo", "KJo"],
-        },
-        "BTN": {
-            "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44",
-                     "AKs", "AQs", "AJs", "ATs", "A9s", "A8s", "A7s", "A6s", "A5s", "A4s", "A3s", "A2s",
-                     "KQs", "KJs", "KTs", "K9s", "K8s",
-                     "QJs", "QTs", "Q9s",
-                     "JTs", "J9s",
-                     "T9s", "T8s",
-                     "98s", "97s",
-                     "87s", "76s", "65s", "54s",
-                     "AKo", "AQo", "AJo", "ATo", "A9o",
-                     "KQo", "KJo", "KTo",
-                     "QJo", "QTo",
-                     "JTo"],
-        },
-        "SB": {
-            "raise": ["AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55",
-                     "AKs", "AQs", "AJs", "ATs", "A9s", "A8s", "A7s", "A6s", "A5s", "A4s",
-                     "KQs", "KJs", "KTs", "K9s",
-                     "QJs", "QTs",
-                     "JTs", "J9s",
-                     "T9s",
-                     "98s", "87s", "76s",
-                     "AKo", "AQo", "AJo", "ATo",
-                     "KQo", "KJo",
-                     "QJo"],
-        },
+    return {
+        "raise": position_data.get("raise", []),
+        "raise_size": position_data.get("raise_size", 2.5),
+        "description": position_data.get("description", "")
+    }
+
+
+def get_3bet_range(
+    vs_position: str
+) -> dict:
+    """
+    Get 3-bet range vs given position.
+    
+    Returns:
+        Dict with 'value', 'bluff', and 'call' lists
+    """
+    chart = load_chart("3bet_ranges")
+    
+    if not chart:
+        return {"3bet_value": [], "3bet_bluff": [], "call": []}
+    
+    ranges = chart.get("ranges", {})
+    range_key = f"vs_{vs_position}"
+    position_data = ranges.get(range_key, {})
+    
+    return {
+        "3bet_value": position_data.get("3bet_value", []),
+        "3bet_bluff": position_data.get("3bet_bluff", []),
+        "call": position_data.get("call", []),
+        "description": position_data.get("description", "")
+    }
+
+
+def is_hand_in_range(hand: str, range_list: list[str]) -> bool:
+    """
+    Check if a hand is in the given range.
+    
+    Args:
+        hand: Hand notation (e.g., "AKs", "QQ", "T9o")
+        range_list: List of hands in the range
+    
+    Returns:
+        True if hand is in range
+    """
+    if not range_list:
+        return False
+    
+    if "any" in range_list:
+        return True
+    
+    # Normalize hand notation
+    normalized = _normalize_hand(hand)
+    
+    return normalized in range_list
+
+
+def _normalize_hand(hand: str) -> str:
+    """Normalize hand notation (e.g., 'KAs' -> 'AKs')."""
+    if len(hand) < 2:
+        return hand
+    
+    ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
+    rank_order = {r: i for i, r in enumerate(ranks)}
+    
+    r1, r2 = hand[0].upper(), hand[1].upper()
+    suffix = hand[2:].lower() if len(hand) > 2 else ""
+    
+    # Sort ranks (higher first)
+    if rank_order.get(r1, 0) < rank_order.get(r2, 0):
+        r1, r2 = r2, r1
+    
+    # Pairs don't have suffix
+    if r1 == r2:
+        return f"{r1}{r2}"
+    
+    return f"{r1}{r2}{suffix}"
+
+
+def _get_stack_key(stack_bb: int, ranges: dict) -> Optional[str]:
+    """Find the nearest stack bucket key."""
+    # Standard buckets
+    buckets = [3, 4, 5, 6, 7, 8, 10, 12, 15]
+    
+    # Find nearest bucket that exists in ranges
+    available_keys = [k for k in ranges.keys() if k.endswith("bb")]
+    
+    if not available_keys:
+        # Try without 'bb' suffix
+        available_keys = list(ranges.keys())
+    
+    # Parse available stack sizes
+    available_stacks = []
+    for key in available_keys:
+        try:
+            stack = int(key.replace("bb", ""))
+            available_stacks.append((stack, key))
+        except ValueError:
+            continue
+    
+    if not available_stacks:
+        return None
+    
+    # Find nearest bucket
+    available_stacks.sort(key=lambda x: x[0])
+    
+    for stack, key in available_stacks:
+        if stack_bb <= stack:
+            return key
+    
+    # Return largest if stack exceeds all buckets
+    return available_stacks[-1][1]
+
+
+def get_chart_stats() -> dict:
+    """Get statistics about loaded charts."""
+    stats = {
+        "charts_loaded": [],
+        "total_ranges": 0,
     }
     
-    for position, actions in position_ranges.items():
-        for action, hand_list in actions.items():
-            for hand in hand_list:
-                ranges.append({
-                    "position": position,
-                    "action_facing": "open",
-                    "table_format": "6max",
-                    "stack_bb_min": 20,
-                    "stack_bb_max": 1000,
-                    "hand": hand,
-                    "action": action,
-                    "frequency": 1.0,
-                    "raise_size": 2.5 if position in ["BTN", "SB"] else 3.0,
-                    "source": "default",
-                })
+    chart_files = ["push_fold_9max", "push_fold_6max", "opening_ranges", "3bet_ranges"]
     
-    return ranges
+    for chart_name in chart_files:
+        chart = load_chart(chart_name)
+        if chart:
+            stats["charts_loaded"].append(chart_name)
+            ranges = chart.get("ranges", {})
+            stats["total_ranges"] += len(ranges)
+    
+    return stats
 
 
-async def seed_default_ranges(session: AsyncSession):
-    """Seed database with default ranges."""
-    ranges = generate_default_ranges()
-    
-    for range_data in ranges:
-        entry = PreflopRange(**range_data)
-        session.add(entry)
-    
-    await session.commit()
+def clear_chart_cache():
+    """Clear the chart loading cache."""
+    load_chart.cache_clear()

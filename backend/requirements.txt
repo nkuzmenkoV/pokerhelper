@@ -27,3 +27,7 @@ python-dotenv==1.0.0
 
 # Async
 aiofiles==23.2.1
+
+# Logging & Monitoring
+structlog==24.1.0
+prometheus-client==0.19.0

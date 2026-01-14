@@ -1,12 +1,14 @@
 """
 Push/Fold charts for short stack play.
 
-Based on Nash equilibrium solutions for heads-up push/fold scenarios,
-adjusted for different stack depths and positions.
+Based on Nash equilibrium solutions for push/fold scenarios,
+loaded from JSON chart files.
 """
 
 from typing import Optional
 from dataclasses import dataclass
+
+from app.db.charts import get_push_fold_range, get_call_range, is_hand_in_range
 
 
 @dataclass
@@ -16,6 +18,7 @@ class PushFoldDecision:
     equity: float  # Expected equity
     hand_strength: float  # Hand ranking 0-1
     chart_position: str  # Position in the chart
+    in_range: bool  # Whether hand is in optimal range
 
 
 # Hand rankings (higher = better)
@@ -75,72 +78,30 @@ HAND_RANKINGS = {
     "T5o": 0.24, "T4o": 0.22, "T3o": 0.20, "T2o": 0.18,
     
     # Suited connectors and others
-    "98s": 0.48, "97s": 0.40, "96s": 0.35, "95s": 0.30,
-    "87s": 0.45, "86s": 0.38, "85s": 0.32,
-    "76s": 0.42, "75s": 0.35, "74s": 0.28,
-    "65s": 0.40, "64s": 0.32, "63s": 0.26,
+    "98s": 0.48, "97s": 0.40, "96s": 0.35, "95s": 0.30, "94s": 0.26, "93s": 0.24, "92s": 0.22,
+    "87s": 0.45, "86s": 0.38, "85s": 0.32, "84s": 0.28, "83s": 0.24, "82s": 0.22,
+    "76s": 0.42, "75s": 0.35, "74s": 0.28, "73s": 0.24, "72s": 0.20,
+    "65s": 0.40, "64s": 0.32, "63s": 0.26, "62s": 0.22,
     "54s": 0.38, "53s": 0.30, "52s": 0.24,
     "43s": 0.32, "42s": 0.25,
     "32s": 0.28,
     
     # Offsuit connectors
-    "98o": 0.38, "97o": 0.30, "96o": 0.25,
-    "87o": 0.35, "86o": 0.28, "85o": 0.22,
-    "76o": 0.32, "75o": 0.25,
-    "65o": 0.30, "64o": 0.22,
-    "54o": 0.28, "53o": 0.20,
+    "98o": 0.38, "97o": 0.30, "96o": 0.25, "95o": 0.20, "94o": 0.18, "93o": 0.16, "92o": 0.14,
+    "87o": 0.35, "86o": 0.28, "85o": 0.22, "84o": 0.18, "83o": 0.16, "82o": 0.14,
+    "76o": 0.32, "75o": 0.25, "74o": 0.20, "73o": 0.16, "72o": 0.12,
+    "65o": 0.30, "64o": 0.22, "63o": 0.18, "62o": 0.14,
+    "54o": 0.28, "53o": 0.20, "52o": 0.16,
     "43o": 0.22, "42o": 0.18,
     "32o": 0.18,
-}
-
-
-# Push ranges by position and stack depth (in BB)
-# Values represent minimum hand strength to push
-PUSH_THRESHOLDS = {
-    # Stack: {Position: min_hand_strength}
-    3: {  # 3BB - very wide pushing range
-        "BTN": 0.20, "SB": 0.25, "BB": 0.30,
-        "CO": 0.35, "MP": 0.45, "UTG": 0.55,
-    },
-    5: {  # 5BB
-        "BTN": 0.30, "SB": 0.35, "BB": 0.40,
-        "CO": 0.45, "MP": 0.55, "UTG": 0.65,
-    },
-    8: {  # 8BB
-        "BTN": 0.40, "SB": 0.45, "BB": 0.50,
-        "CO": 0.55, "MP": 0.65, "UTG": 0.75,
-    },
-    10: {  # 10BB
-        "BTN": 0.50, "SB": 0.55, "BB": 0.60,
-        "CO": 0.65, "MP": 0.72, "UTG": 0.80,
-    },
-    12: {  # 12BB
-        "BTN": 0.55, "SB": 0.60, "BB": 0.65,
-        "CO": 0.70, "MP": 0.78, "UTG": 0.85,
-    },
-    15: {  # 15BB - tightest push range
-        "BTN": 0.65, "SB": 0.68, "BB": 0.72,
-        "CO": 0.75, "MP": 0.82, "UTG": 0.90,
-    },
-}
-
-
-# Call ranges (vs all-in) by position
-CALL_THRESHOLDS = {
-    3: {"BB": 0.35, "SB": 0.40, "BTN": 0.50, "CO": 0.60, "MP": 0.70, "UTG": 0.80},
-    5: {"BB": 0.45, "SB": 0.50, "BTN": 0.60, "CO": 0.68, "MP": 0.75, "UTG": 0.85},
-    8: {"BB": 0.55, "SB": 0.60, "BTN": 0.68, "CO": 0.75, "MP": 0.82, "UTG": 0.88},
-    10: {"BB": 0.60, "SB": 0.65, "BTN": 0.72, "CO": 0.78, "MP": 0.85, "UTG": 0.90},
-    12: {"BB": 0.65, "SB": 0.70, "BTN": 0.76, "CO": 0.82, "MP": 0.88, "UTG": 0.92},
-    15: {"BB": 0.70, "SB": 0.75, "BTN": 0.80, "CO": 0.85, "MP": 0.90, "UTG": 0.95},
 }
 
 
 class PushFoldCalculator:
     """Calculator for push/fold decisions in short stack situations."""
     
-    def __init__(self):
-        pass
+    def __init__(self, table_format: str = "9max"):
+        self.table_format = table_format
     
     def get_hand_strength(self, hand: str) -> float:
         """Get normalized hand strength (0-1)."""
@@ -159,22 +120,18 @@ class PushFoldCalculator:
         ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
         rank_order = {r: i for i, r in enumerate(ranks)}
         
-        r1, r2 = hand[0], hand[1]
-        suffix = hand[2:] if len(hand) > 2 else ""
+        r1, r2 = hand[0].upper(), hand[1].upper()
+        suffix = hand[2:].lower() if len(hand) > 2 else ""
         
         # Sort ranks (higher first)
         if rank_order.get(r1, 0) < rank_order.get(r2, 0):
             r1, r2 = r2, r1
         
+        # Pairs don't have suffix
+        if r1 == r2:
+            return f"{r1}{r2}"
+        
         return f"{r1}{r2}{suffix}"
-    
-    def _get_stack_bucket(self, stack_bb: float) -> int:
-        """Get the nearest stack bucket for threshold lookup."""
-        buckets = [3, 5, 8, 10, 12, 15]
-        for bucket in buckets:
-            if stack_bb <= bucket:
-                return bucket
-        return 15
     
     def should_push(
         self,
@@ -194,30 +151,38 @@ class PushFoldCalculator:
             facing_raise: Whether facing a raise
             num_players_behind: Number of players yet to act
         """
-        hand_strength = self.get_hand_strength(hand)
-        stack_bucket = self._get_stack_bucket(stack_bb)
+        normalized_hand = self._normalize_hand(hand)
+        hand_strength = self.get_hand_strength(normalized_hand)
         
-        # Get threshold for this position and stack
-        thresholds = PUSH_THRESHOLDS.get(stack_bucket, PUSH_THRESHOLDS[15])
-        threshold = thresholds.get(position, 0.70)
+        # Get push range from JSON charts
+        push_range = get_push_fold_range(
+            position=position,
+            stack_bb=int(stack_bb),
+            table_format=self.table_format
+        )
         
-        # Adjust for players behind
-        threshold += num_players_behind * 0.03
+        # Check if hand is in range
+        in_range = is_hand_in_range(normalized_hand, push_range)
         
-        # Adjust if facing raise (need tighter range)
+        # Adjust for facing raise (need tighter range)
         if facing_raise:
-            threshold += 0.15
+            # When facing raise, tighten by ~20%
+            if in_range and hand_strength < 0.70:
+                in_range = hand_strength >= 0.55
         
-        # Clamp threshold
-        threshold = min(threshold, 0.98)
+        # Adjust for players behind (tighten range)
+        if num_players_behind > 3 and in_range:
+            if hand_strength < 0.65:
+                in_range = False
         
-        action = "push" if hand_strength >= threshold else "fold"
+        action = "push" if in_range else "fold"
         
         return PushFoldDecision(
             action=action,
             equity=hand_strength,
             hand_strength=hand_strength,
-            chart_position=f"{position}_{stack_bucket}BB",
+            chart_position=f"{position}_{int(stack_bb)}BB",
+            in_range=in_range,
         )
     
     def should_call(
@@ -225,7 +190,7 @@ class PushFoldCalculator:
         hand: str,
         position: str,
         stack_bb: float,
-        villain_stack_bb: float,
+        villain_position: str = "SB",
         pot_bb: float = 1.5,
     ) -> PushFoldDecision:
         """
@@ -235,40 +200,86 @@ class PushFoldCalculator:
             hand: Hand notation
             position: Hero's position
             stack_bb: Hero's stack in BB
-            villain_stack_bb: Villain's all-in amount in BB
+            villain_position: Villain's position
             pot_bb: Current pot in BB
         """
-        hand_strength = self.get_hand_strength(hand)
+        normalized_hand = self._normalize_hand(hand)
+        hand_strength = self.get_hand_strength(normalized_hand)
         
-        # Calculate pot odds
-        call_amount = min(stack_bb, villain_stack_bb)
-        total_pot = pot_bb + call_amount * 2
-        required_equity = call_amount / total_pot
+        # Get call range from JSON charts
+        call_range = get_call_range(
+            position=position,
+            stack_bb=int(stack_bb),
+            table_format=self.table_format,
+            vs_position=villain_position
+        )
         
-        # Get calling threshold
-        stack_bucket = self._get_stack_bucket(villain_stack_bb)
-        thresholds = CALL_THRESHOLDS.get(stack_bucket, CALL_THRESHOLDS[15])
-        threshold = thresholds.get(position, 0.70)
+        in_range = is_hand_in_range(normalized_hand, call_range)
         
         # Adjust for pot odds
-        threshold = max(threshold - (0.5 - required_equity) * 0.3, required_equity + 0.05)
+        call_amount = min(stack_bb, stack_bb)  # Simplified
+        total_pot = pot_bb + call_amount * 2
+        required_equity = call_amount / total_pot if total_pot > 0 else 0.5
         
-        action = "call" if hand_strength >= threshold else "fold"
+        # If getting great pot odds, widen calling range
+        if required_equity < 0.35 and hand_strength >= 0.40:
+            in_range = True
+        
+        action = "call" if in_range else "fold"
         
         return PushFoldDecision(
             action=action,
             equity=hand_strength,
             hand_strength=hand_strength,
-            chart_position=f"call_{position}_{stack_bucket}BB",
+            chart_position=f"call_{position}_vs_{villain_position}_{int(stack_bb)}BB",
+            in_range=in_range,
         )
     
     def get_push_range(self, position: str, stack_bb: float) -> list[str]:
         """Get all hands that should be pushed from this position/stack."""
-        stack_bucket = self._get_stack_bucket(stack_bb)
-        thresholds = PUSH_THRESHOLDS.get(stack_bucket, PUSH_THRESHOLDS[15])
-        threshold = thresholds.get(position, 0.70)
+        return get_push_fold_range(
+            position=position,
+            stack_bb=int(stack_bb),
+            table_format=self.table_format
+        )
+    
+    def get_call_range(
+        self, 
+        position: str, 
+        stack_bb: float, 
+        vs_position: str = "SB"
+    ) -> list[str]:
+        """Get all hands that should call an all-in."""
+        return get_call_range(
+            position=position,
+            stack_bb=int(stack_bb),
+            table_format=self.table_format,
+            vs_position=vs_position
+        )
+    
+    def get_range_percentage(self, range_list: list[str]) -> float:
+        """Calculate what percentage of hands a range represents."""
+        if not range_list:
+            return 0.0
         
-        return [
-            hand for hand, strength in HAND_RANKINGS.items()
-            if strength >= threshold
-        ]
+        if "any" in range_list:
+            return 100.0
+        
+        # Total possible starting hands: 169 unique combinations
+        # But actual combos: 1326
+        # Pairs: 13 * 6 = 78
+        # Suited: 78 * 4 = 312  
+        # Offsuit: 78 * 12 = 936
+        
+        total_combos = 1326
+        range_combos = 0
+        
+        for hand in range_list:
+            if len(hand) == 2:  # Pair
+                range_combos += 6
+            elif hand.endswith('s'):  # Suited
+                range_combos += 4
+            elif hand.endswith('o'):  # Offsuit
+                range_combos += 12
+        
+        return (range_combos / total_combos) * 100
