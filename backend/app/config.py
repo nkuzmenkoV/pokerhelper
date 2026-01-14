@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     # Redis
     redis_url: str = "redis://redis:6379/0"
     
-    # CORS
-    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    # CORS - comma-separated string
+    cors_origins: str = "http://localhost:5173,http://localhost:3000"
     
     # CV Settings
     capture_fps: int = 2  # Frames per second to process
@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     
     # Model paths
     yolo_model_path: str = "models/cards_yolo.pt"
+    
+    def get_cors_origins_list(self) -> list[str]:
+        """Parse CORS origins string to list."""
+        return [origin.strip() for origin in self.cors_origins.split(',') if origin.strip()]
     
     class Config:
         env_file = ".env"
