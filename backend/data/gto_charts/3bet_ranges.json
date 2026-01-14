@@ -76,9 +76,9 @@
     }
   },
   "sizing": {
-    "3bet_IP": {3.0: "In position 3-bet size (x open)"},
+    "3bet_IP": 3.0,
     "3bet_OOP": 3.5,
     "4bet": 2.25,
-    "5bet": "All-in"
+    "5bet_description": "All-in"
   }
 }
