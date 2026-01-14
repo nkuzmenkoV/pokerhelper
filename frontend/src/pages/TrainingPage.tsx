@@ -701,28 +701,24 @@ export function TrainingPage() {
           </div>
         )}
 
-        {/* Hidden video element */}
-        <video ref={videoRef} className="hidden" />
-
         {/* Main content grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column - Canvas */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Live preview when capturing */}
-            {isCapturing && !capturedImage && (
-              <div className="glass rounded-xl p-4">
-                <h3 className="text-sm font-medium text-gray-400 mb-2">Live Preview</h3>
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  muted
-                  className="w-full rounded-lg"
-                />
-                <p className="text-sm text-gray-500 mt-2 text-center">
-                  Click "Capture" to take a screenshot for labeling
-                </p>
-              </div>
-            )}
+            {/* Live preview when capturing - single video element always in DOM */}
+            <div className={`glass rounded-xl p-4 ${isCapturing && !capturedImage ? '' : 'hidden'}`}>
+              <h3 className="text-sm font-medium text-gray-400 mb-2">Live Preview</h3>
+              <video
+                ref={videoRef}
+                autoPlay
+                muted
+                playsInline
+                className="w-full rounded-lg bg-black min-h-[200px]"
+              />
+              <p className="text-sm text-gray-500 mt-2 text-center">
+                Click "Capture" to take a screenshot for labeling
+              </p>
+            </div>
             
             {/* Labeling canvas */}
             {activeTab === 'label' && (
